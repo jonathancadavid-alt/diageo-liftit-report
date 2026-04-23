@@ -373,7 +373,7 @@
 
 <script>
 // ─── LIVE API URL ───────────────────────────────────────────────────────────
-const API_URL = 'https://script.google.com/macros/s/AKfycbw2dOQ305Jm_hOiehiB4PzwSX-uVguiC3agARNFX_q-kGcSHO3qlO0ymAwC90Px8thRag/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzUk24PDJNk3Fv-r3hijJZh3OMl9tbTHnvrPc4Spo58sn-P6MzwyDnGKTdhQ1dRasYtJw/exec';
 
 const TIP_COLORS = {CARRY:'#1d4ed8',NHR:'#d97706',TURBO:'#dc2626',SENCILLO:'#059669',PATINETA:'#f59e0b','#N/A':'#9ca3af'};
 
@@ -509,7 +509,6 @@ function processRaw(raw){
 
 /* ── LOAD ── */
 async function loadData(){
-  // Show fallback immediately — don't touch the loading overlay if data already loaded
   const firstLoad = allData.length === 0;
   if(firstLoad){
     document.getElementById('loadingOverlay').style.display='flex';
@@ -518,52 +517,53 @@ async function loadData(){
     applyFilters();
     document.getElementById('loadingOverlay').style.display='none';
   }
-  document.getElementById('footerStatus').textContent='⏳ Conectando con Google Sheets…';
-  document.getElementById('footerStatus').style.color='var(--muted2)';
+  document.getElementById('footerStatus').textContent = '⏳ Conectando con Google Sheets…';
+  document.getElementById('footerStatus').style.color = 'var(--muted2)';
+  fetchViaJSONP('https://script.google.com/macros/s/AKfycbzUk24PDJNk3Fv-r3hijJZh3OMl9tbTHnvrPc4Spo58sn-P6MzwyDnGKTdhQ1dRasYtJw/exec');
+}
 
-  const API = 'https://script.google.com/macros/s/AKfycbw2dOQ305Jm_hOiehiB4PzwSX-uVguiC3agARNFX_q-kGcSHO3qlO0ymAwC90Px8thRag/exec';
-  const URLS = [
-    API + '?nocache=' + Date.now(),
-    'https://corsproxy.io/?' + encodeURIComponent(API + '?nocache=' + Date.now()),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(API)
-  ];
+function fetchViaJSONP(url){
+  const old = document.getElementById('_gs_jsonp');
+  if(old) old.remove();
+  if(window.__diageoCallback && window.__diageoCallback._timer)
+    clearTimeout(window.__diageoCallback._timer);
 
-  let success = false;
-  for(const url of URLS){
+  window.__diageoCallback = function(payload){
+    clearTimeout(window.__diageoCallback._timer);
     try{
-      const ctrl = new AbortController();
-      const timer = setTimeout(()=>ctrl.abort(), 14000);
-      const res = await fetch(url, {signal:ctrl.signal, cache:'no-store'});
-      clearTimeout(timer);
-      if(!res || !res.ok) continue;
-      const payload = await res.json();
       const rawData = Array.isArray(payload) ? payload : (payload.data || payload);
-      if(!rawData || !rawData.length) continue;
-
+      if(!rawData || !rawData.length) throw new Error('Sin datos');
       allData = processAPI(rawData);
-
-      if(payload.programacion?.dates?.length){
+      if(payload.programacion && payload.programacion.dates && payload.programacion.dates.length){
         PROG_DATA.dates = payload.programacion.dates;
         PROG_DATA.rows  = payload.programacion.rows;
         renderProg();
       }
-
-      // Rebuild selectors preserving current selection
       buildSelectors(true);
       applyFilters();
-
       const now = new Date().toLocaleString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
       document.getElementById('footerStatus').textContent = '✓ En vivo · Google Sheets · ' + now;
-      document.getElementById('footerStatus').style.color = 'var(--green)';
-      success = true;
-      break;
-    }catch(e){ console.warn('Proxy failed:', url, e.message); }
-  }
+      document.getElementById('footerStatus').style.color = '#059669';
+    }catch(err){
+      document.getElementById('footerStatus').textContent = '⚠ Error procesando datos. Presiona ↻ Refresh';
+      document.getElementById('footerStatus').style.color = '#d97706';
+    }
+  };
 
-  if(!success){
-    document.getElementById('footerStatus').textContent = '⚠ Datos locales — Presiona ↻ Refresh para reintentar';
+  window.__diageoCallback._timer = setTimeout(()=>{
+    document.getElementById('footerStatus').textContent = '⚠ Sin respuesta del Sheet — datos locales. Presiona ↻ Refresh';
     document.getElementById('footerStatus').style.color = '#d97706';
-  }
+  }, 15000);
+
+  const s = document.createElement('script');
+  s.id = '_gs_jsonp';
+  s.src = url + '?callback=__diageoCallback&t=' + Date.now();
+  s.onerror = ()=>{
+    clearTimeout(window.__diageoCallback._timer);
+    document.getElementById('footerStatus').textContent = '⚠ Sin conexión al Sheet — datos locales. Presiona ↻ Refresh';
+    document.getElementById('footerStatus').style.color = '#d97706';
+  };
+  document.head.appendChild(s);
 }
 
 /* ── SELECTORS ── */
