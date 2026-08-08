@@ -90,7 +90,7 @@
   .badge-patineta{background:#fde68a;color:#78350f;}
   .badge-na{background:#f3f4f6;color:#6b7280;}
   .lf-wrap{display:inline-flex;align-items:center;gap:6px;justify-content:center;}
-  .lf-track{width:44px;height:5px;background:transparent;border-radius:3px;overflow:hidden;}
+  .lf-track{width:44px;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;}
   .lf-fill{height:100%;border-radius:3px;}
   .lf-pct{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;min-width:34px;text-align:left;}
 
@@ -308,7 +308,6 @@
 <div class="tabs-bar">
   <button class="tab-btn active" onclick="switchTab('operativo')" id="tab-operativo">📊 Reporte Operativo</button>
   <button class="tab-btn" onclick="switchTab('programacion')" id="tab-programacion">🗓️ Programación</button>
-  <button class="tab-btn" onclick="switchTab('resumentk')" id="tab-resumentk">📋 Resumen TK</button>
 </div>
 
 <!-- KPIs -->
@@ -319,7 +318,6 @@
   <div class="kpi-card"><span class="kpi-icon">📋</span><span class="kpi-value" id="kpiOrders">—</span><span class="kpi-label">Orders Shipped</span></div>
   <div class="kpi-card"><span class="kpi-icon">🚛</span><span class="kpi-value" id="kpiTransport">—</span><span class="kpi-label">Transport Used</span></div>
   <div class="kpi-card"><span class="kpi-icon">📊</span><span class="kpi-value" id="kpiOccupation">—</span><span class="kpi-label">Avg Transport Occupation</span></div>
-  <div class="kpi-card"><span class="kpi-icon">✅</span><span class="kpi-value" id="kpiOntime">—</span><span class="kpi-label">On Time</span></div>
   <div class="kpi-card invoicing"><span class="kpi-icon">💰</span><span class="kpi-value" id="kpiInvoicing">—</span><span class="kpi-label">Invoicing</span></div>
 </div>
 
@@ -362,16 +360,6 @@
   </div>
 </div>
 
-<!-- WORKER UTILIZATION CHART -->
-<div class="panels-row" style="margin-top:16px;">
-  <div class="panel" style="flex:1;">
-    <div class="panel-header">
-      <div class="panel-title"><div class="ptd" style="background:#6366f1"></div>Worker Utilization / Load Factor by Tipología</div>
-    </div>
-    <div style="padding:16px 20px;"><canvas id="utilizChart" height="120"></canvas></div>
-  </div>
-</div>
-
 </div><!-- end tab-operativo-content -->
 
 <!-- TAB PROGRAMACION -->
@@ -405,47 +393,6 @@
       <select id="progDaySelect" onchange="renderProg()" style="padding:4px 10px;border:1px solid var(--border2);border-radius:4px;font-family:DM Sans,sans-serif;font-size:12px;background:var(--surface);color:var(--text);cursor:pointer;"></select>
     </div>
   </div>
-
-<!-- RESUMEN TK TAB -->
-<div class="tab-content" id="tab-resumentk-content">
-  <div style="padding:24px 28px;">
-    <!-- Header row -->
-    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
-
-      <!-- Left table: Estado / Cantidad / Valor / % -->
-      <div style="flex:1;min-width:340px;">
-        <div style="font-size:11px;font-weight:700;color:var(--diageo);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">Estado de Entregas</div>
-        <table class="data-table" id="tkEstadoTable">
-          <thead>
-            <tr>
-              <th style="text-align:left;">Estado</th>
-              <th>Cantidad</th>
-              <th>Valor</th>
-              <th>%</th>
-            </tr>
-          </thead>
-          <tbody id="tkEstadoBody">
-            <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted2)">Cargando…</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Right table: On Time / In Full / OTIF -->
-      <div style="min-width:280px;">
-        <div style="font-size:11px;font-weight:700;color:var(--diageo);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">Indicadores</div>
-        <table class="data-table" id="tkIndicTable">
-          <thead>
-            <tr><th>Indicador</th><th>Total</th><th>Cumple</th><th>No Cumple</th><th>%</th></tr>
-          </thead>
-          <tbody id="tkIndicBody">
-            <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted2)">Cargando…</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-  </div>
-</div>
   <!-- LEGEND -->
   <div class="prog-legend">
     <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div>⚠ Tardía — después de 9:00</div>
@@ -469,7 +416,7 @@
 
 <script>
 // ─── LIVE API URL ───────────────────────────────────────────────────────────
-const API_URL = 'https://script.google.com/macros/s/AKfycbyf-8XT5EH-uD9ABF3Jx1lgjQcAxtpXxOPgRiJXtuFXh8r8C7FG9ykz89NQS47pW98Amg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzG5AyaviUShU0waDzoYCwtV7qSq-TVBz65XDGigrRIv_kJw8BI3UtktMiiCsGXEVG9Mw/exec';
 
 const TIP_COLORS = {CARRY:'#1d4ed8',NHR:'#d97706',TURBO:'#dc2626',SENCILLO:'#059669',PATINETA:'#f59e0b','#N/A':'#9ca3af'};
 
@@ -532,21 +479,8 @@ function processAPI(raw){
     if(tip&&tip!=='#N/A') d.tipologia=tip;
     if(planta) d.planta=planta;
     if(orig)   d.origen=orig;
-    // On Time: 0 or 100 per delivery (unique)
-    const ontimeRaw = r['ONTIME']||r['Ontime']||r['ON TIME']||r['On Time']||r['on_time']||'';
-    const ontimeVal = parseFloat(ontimeRaw.toString().replace('%','').trim());
-    if(del_ && !isNaN(ontimeVal)){
-      if(!d.ontimeMap) d.ontimeMap = {};
-      d.ontimeMap[del_] = ontimeVal;
-    }
   });
-  return Object.values(map).map(d=>({
-    ...d,
-    orders: d.orders.size,
-    ontimeAvg: d.ontimeMap && Object.keys(d.ontimeMap).length
-      ? Math.round(Object.values(d.ontimeMap).reduce((a,b)=>a+b,0) / Object.keys(d.ontimeMap).length)
-      : null
-  }));
+  return Object.values(map).map(d=>({...d, orders:d.orders.size}));
 }
 
 function formatFecha(val){
@@ -621,7 +555,7 @@ function processRaw(raw){
 async function loadData(){
   document.getElementById('footerStatus').textContent = '⏳ Conectando…';
   document.getElementById('footerStatus').style.color = 'var(--muted2)';
-  fetchViaJSONP('https://script.google.com/macros/s/AKfycbyf-8XT5EH-uD9ABF3Jx1lgjQcAxtpXxOPgRiJXtuFXh8r8C7FG9ykz89NQS47pW98Amg/exec');
+  fetchViaJSONP('https://script.google.com/macros/s/AKfycbzG5AyaviUShU0waDzoYCwtV7qSq-TVBz65XDGigrRIv_kJw8BI3UtktMiiCsGXEVG9Mw/exec');
 }
 
 function fetchViaJSONP(url){
@@ -645,12 +579,6 @@ function fetchViaJSONP(url){
         PROG_DATA.dates = payload.programacion.dates;
         PROG_DATA.rows  = payload.programacion.rows;
         renderProg();
-      }
-      // Resumen TK
-      if(payload.resumentk){
-        TK_DATA = payload.resumentk;
-        const activeTab = document.querySelector('.tab-btn.active');
-        if(activeTab && activeTab.id==='tab-resumentk') renderResumenTK();
       }
 
       // Restore or auto-select last date
@@ -1061,7 +989,7 @@ function fmtCOP(n){
   if(n>=1e6) return '$ '+(n/1e6).toFixed(1).replace('.',',')+' M';
   return '$ '+fmt(Math.round(n));
 }
-function lfColor(p){return p>=100?'#059669':p>=98?'#16a34a':'#dc2626';}
+function lfColor(p){return p>100?'#dc2626':p>=80?'#d97706':'#059669';}
 function tipBadge(t){
   const c={CARRY:'carry',NHR:'nhr',TURBO:'turbo',SENCILLO:'sencillo',PATINETA:'patineta'}[t]||'na';
   return `<span class="badge badge-${c}">${t||'—'}</span>`;
@@ -1070,7 +998,7 @@ function tipBadge(t){
 function renderAll(data,fecha){
   document.getElementById('reportDate').textContent = fecha || '—';
   if(!data.length){
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted2)">Seleccione una fecha para ver los datos</td></tr>';
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted2)">Seleccione una fecha para ver los datos</td></tr>';
     document.getElementById('footerCount').textContent='Sin datos para la selección';
     return;
   }
@@ -1095,11 +1023,6 @@ function renderAll(data,fecha){
   document.getElementById('kpiOrders').textContent=fmt(orders);
   document.getElementById('kpiTransport').textContent=transp;
   document.getElementById('kpiOccupation').textContent=avgOcc+' %';
-  // On Time KPI — avg across all unique deliveries in filtered data
-  const ontimeVals = data.filter(r=>r.ontimeAvg!==null&&r.ontimeAvg!==undefined).map(r=>r.ontimeAvg);
-  const ontimeKpi  = ontimeVals.length ? Math.round(ontimeVals.reduce((a,b)=>a+b,0)/ontimeVals.length) : null;
-  const ontimeEl   = document.getElementById('kpiOntime');
-  if(ontimeEl) ontimeEl.textContent = ontimeKpi!==null ? ontimeKpi+'%' : '—';
   document.getElementById('kpiInvoicing').textContent=fmtCOP(invoic);
   document.getElementById('tableCount').textContent=data.length+' vehículos';
   document.getElementById('footerCount').textContent=data.length+' vehículos · '+orders+' entregas';
@@ -1315,30 +1238,6 @@ function renderAll(data,fecha){
       }}
     }
   });
-
-  // ── Worker Utilization chart by tipología ──
-  const tipUtilMap = {};
-  data.forEach(r=>{
-    if(!r.tipologia||r.capacidad<=0) return;
-    const t = r.tipologia;
-    if(!tipUtilMap[t]) tipUtilMap[t]={cajas:0,cap:0};
-    tipUtilMap[t].cajas += r.cajas||0;
-    tipUtilMap[t].cap   += r.capacidad;
-  });
-  const tipLabels  = Object.keys(tipUtilMap).sort();
-  const tipUtilPct = tipLabels.map(t=>tipUtilMap[t].cap>0?Math.round(tipUtilMap[t].cajas/tipUtilMap[t].cap*100):0);
-  const tipColors  = tipUtilPct.map(v=>v>100?'#dc2626':v>=80?'#d97706':'#2563eb');
-  if(window._uchart) window._uchart.destroy();
-  const ucEl = document.getElementById('utilizChart');
-  if(ucEl){
-    window._uchart = new Chart(ucEl,{
-      type:'bar',
-      data:{labels:tipLabels,datasets:[{label:'Load Factor %',data:tipUtilPct,backgroundColor:tipColors,borderRadius:6,barThickness:40}]},
-      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+'%'}}},
-        scales:{x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:12}}},
-          y:{beginAtZero:true,ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:11}},grid:{color:'#f1f5f9'}}}
-    });
-  }
 }
 
 /* ── FALLBACK DATA ── */
@@ -1346,59 +1245,15 @@ const FALLBACK=[{"fecha":"03/03/2026","placa":"QJX149","tipologia":"CARRY","capa
 
 
 /* ── TABS ── */
-
-}
-
-
-function renderResumenTK(){
-  // ── Estado table ──
-  const tbody = document.getElementById('tkEstadoBody');
-  if(TK_DATA.estados && TK_DATA.estados.length){
-    const totalPct = TK_DATA.estados.find(r=>r.estado&&r.estado.toLowerCase().includes('total'));
-    tbody.innerHTML = TK_DATA.estados.map(r=>{
-      const pct = parseFloat(r.pct)||0;
-      const color = pct>=50?'#059669':pct>=20?'#d97706':'#dc2626';
-      const isTotal = r.estado&&r.estado.toLowerCase().includes('total');
-      return '<tr style="'+(isTotal?'font-weight:700;background:#f8fafc;':'')+'">'
-        +'<td style="text-align:left">'+r.estado+'</td>'
-        +'<td style="text-align:right">'+fmt(r.cantidad||0)+'</td>'
-        +'<td style="text-align:right">$'+fmtCOP(r.valor||0)+'</td>'
-        +'<td style="text-align:right;color:'+(isTotal?'var(--text)':color)+';font-weight:600">'+(r.pct||'')+'</td>'
-        +'</tr>';
-    }).join('');
-  } else {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted2)">Sin datos disponibles — cargando desde Google Sheets</td></tr>';
-  }
-
-  // ── Indicadores table ──
-  const tbody2 = document.getElementById('tkIndicBody');
-  if(TK_DATA.indicadores && TK_DATA.indicadores.length){
-    tbody2.innerHTML = TK_DATA.indicadores.map(r=>{
-      const pct = parseFloat((r.pct||'').toString().replace('%',''))||0;
-      const color = pct>=80?'#059669':pct>=50?'#d97706':'#dc2626';
-      return '<tr>'
-        +'<td style="text-align:left;font-weight:600">'+r.indicador+'</td>'
-        +'<td style="text-align:center">'+r.total+'</td>'
-        +'<td style="text-align:center;color:#059669">'+r.cumple+'</td>'
-        +'<td style="text-align:center;color:#dc2626">'+r.nocumple+'</td>'
-        +'<td style="text-align:center;font-weight:700;color:'+color+'">'+r.pct+'</td>'
-        +'</tr>';
-    }).join('');
-  } else {
-    tbody2.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted2)">Sin datos disponibles</td></tr>';
-  }
-}
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('tab-'+tab+'-content').classList.add('active');
-  if(tab==='resumentk') renderResumenTK();
 }
 
 /* ── PROGRAMACIÓN DATA ── */
 let PROG_DATA = {"dates":["24-mar-2026","25-mar-2026","26-mar-2026","27-mar-2026","28-mar-2026","30-mar-2026","04-abr-2026","06-abr-2026","07-abr-2026","08-abr-2026","09-abr-2026","10-abr-2026","11-abr-2026","13-abr-2026","14-abr-2026","15-abr-2026","16-abr-2026","17-abr-2026","18-abr-2026","20-abr-2026"],"rows":[{"regional":"ARMENIA","24-mar-2026":"SIN SOLICITUD","25-mar-2026":"08:15","26-mar-2026":"SIN SOLICITUD","27-mar-2026":"08:17","28-mar-2026":"08:23","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"09:18","06-abr-2026":"SIN SOLICITUD","07-abr-2026":"09:33","08-abr-2026":"SIN SOLICITUD","09-abr-2026":"08:27","10-abr-2026":"SIN SOLICITUD","11-abr-2026":"SIN SOLICITUD","13-abr-2026":"08:10","14-abr-2026":"08:28","15-abr-2026":"08:00","16-abr-2026":"08:53","17-abr-2026":"09:04","18-abr-2026":"SIN SOLICITUD","20-abr-2026":"08:20"},{"regional":"BARRANQUILLA","24-mar-2026":"08:20","25-mar-2026":"SIN SOLICITUD","26-mar-2026":"08:47","27-mar-2026":"08:00","28-mar-2026":"10:45","30-mar-2026":"08:00","04-abr-2026":"08:48","06-abr-2026":"06:56","07-abr-2026":"06:01","08-abr-2026":"08:29","09-abr-2026":"06:21","10-abr-2026":"08:21","11-abr-2026":"SIN SOLICITUD","13-abr-2026":"08:37","14-abr-2026":"06:14","15-abr-2026":"08:48","16-abr-2026":"08:00","17-abr-2026":"08:29","18-abr-2026":"08:00","20-abr-2026":"06:06"},{"regional":"COTA","24-mar-2026":"08:00","25-mar-2026":"08:00","26-mar-2026":"08:00","27-mar-2026":"12:50","28-mar-2026":"14:28","30-mar-2026":"08:00","04-abr-2026":"SIN SOLICITUD","06-abr-2026":"SIN SOLICITUD","07-abr-2026":"SIN SOLICITUD","08-abr-2026":"11:34","09-abr-2026":"08:00","10-abr-2026":"08:00","11-abr-2026":"07:41","13-abr-2026":"08:00","14-abr-2026":"08:00","15-abr-2026":"08:00","16-abr-2026":"08:00","17-abr-2026":"08:00","18-abr-2026":"08:00","20-abr-2026":"10:46"},{"regional":"CALI","24-mar-2026":"08:00","25-mar-2026":"09:04","26-mar-2026":"08:52","27-mar-2026":"09:05","28-mar-2026":"08:51","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"SIN SOLICITUD","06-abr-2026":"08:55","07-abr-2026":"09:29","08-abr-2026":"08:41","09-abr-2026":"08:54","10-abr-2026":"09:04","11-abr-2026":"SIN SOLICITUD","13-abr-2026":"09:02","14-abr-2026":"09:09","15-abr-2026":"09:12","16-abr-2026":"09:03","17-abr-2026":"09:17","18-abr-2026":"08:09","20-abr-2026":"09:03"},{"regional":"CARTAGENA","24-mar-2026":"09:52","25-mar-2026":"09:24","26-mar-2026":"10:14","27-mar-2026":"10:32","28-mar-2026":"08:00","30-mar-2026":"08:15","04-abr-2026":"08:00","06-abr-2026":"09:07","07-abr-2026":"09:18","08-abr-2026":"09:34","09-abr-2026":"10:18","10-abr-2026":"09:54","11-abr-2026":"08:00","13-abr-2026":"09:59","14-abr-2026":"09:56","15-abr-2026":"10:12","16-abr-2026":"09:10","17-abr-2026":"SIN SOLICITUD","18-abr-2026":"08:00","20-abr-2026":"09:05"},{"regional":"CUCUTA","24-mar-2026":"SIN SOLICITUD","25-mar-2026":"09:13","26-mar-2026":"07:57","27-mar-2026":"SIN SOLICITUD","28-mar-2026":"08:16","30-mar-2026":"08:42","04-abr-2026":"07:59","06-abr-2026":"SIN SOLICITUD","07-abr-2026":"07:56","08-abr-2026":"07:56","09-abr-2026":"07:46","10-abr-2026":"07:35","11-abr-2026":"07:52","13-abr-2026":"07:59","14-abr-2026":"08:08","15-abr-2026":"08:17","16-abr-2026":"","17-abr-2026":"SIN SOLICITUD","18-abr-2026":"08:13","20-abr-2026":"09:40"},{"regional":"IBAGUE","24-mar-2026":"09:00","25-mar-2026":"08:06","26-mar-2026":"09:00","27-mar-2026":"SIN SOLICITUD","28-mar-2026":"08:00","30-mar-2026":"09:14","04-abr-2026":"SIN SOLICITUD","06-abr-2026":"08:32","07-abr-2026":"06:59","08-abr-2026":"08:11","09-abr-2026":"08:51","10-abr-2026":"SIN SOLICITUD","11-abr-2026":"SIN SOLICITUD","13-abr-2026":"SIN SOLICITUD","14-abr-2026":"09:35","15-abr-2026":"09:30","16-abr-2026":"08:51","17-abr-2026":"SIN SOLICITUD","18-abr-2026":"08:45","20-abr-2026":"08:57"},{"regional":"MANIZALES","24-mar-2026":"SIN SOLICITUD","25-mar-2026":"08:28","26-mar-2026":"07:32","27-mar-2026":"SIN SOLICITUD","28-mar-2026":"10:16","30-mar-2026":"09:40","04-abr-2026":"09:23","06-abr-2026":"SIN SOLICITUD","07-abr-2026":"08:32","08-abr-2026":"SIN SOLICITUD","09-abr-2026":"08:27","10-abr-2026":"08:19","11-abr-2026":"08:50","13-abr-2026":"SIN SOLICITUD","14-abr-2026":"08:00","15-abr-2026":"08:33","16-abr-2026":"07:57","17-abr-2026":"SIN SOLICITUD","18-abr-2026":"08:00","20-abr-2026":"08:00"},{"regional":"LA ESTRELLA","24-mar-2026":"09:51","25-mar-2026":"08:51","26-mar-2026":"08:22","27-mar-2026":"09:00","28-mar-2026":"08:45","30-mar-2026":"08:57","04-abr-2026":"SIN SOLICITUD","06-abr-2026":"08:04","07-abr-2026":"09:21","08-abr-2026":"08:58","09-abr-2026":"09:14","10-abr-2026":"08:49","11-abr-2026":"07:25","13-abr-2026":"09:01","14-abr-2026":"09:17","15-abr-2026":"09:10","16-abr-2026":"08:20","17-abr-2026":"07:57","18-abr-2026":"06:56","20-abr-2026":"08:53"},{"regional":"MONTERIA","24-mar-2026":"SIN SOLICITUD","25-mar-2026":"08:34","26-mar-2026":"08:13","27-mar-2026":"08:56","28-mar-2026":"08:12","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"06:53","06-abr-2026":"07:29","07-abr-2026":"08:13","08-abr-2026":"SIN SOLICITUD","09-abr-2026":"08:08","10-abr-2026":"08:21","11-abr-2026":"SIN SOLICITUD","13-abr-2026":"10:.32","14-abr-2026":"07:53","15-abr-2026":"08:14","16-abr-2026":"08:30","17-abr-2026":"07:27","18-abr-2026":"08:35","20-abr-2026":"08:29"},{"regional":"NEIVA","24-mar-2026":"08:24","25-mar-2026":"08:32","26-mar-2026":"08:24","27-mar-2026":"08:56","28-mar-2026":"SIN SOLICITUD","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"SIN SOLICITUD","06-abr-2026":"SIN SOLICITUD","07-abr-2026":"08:34","08-abr-2026":"08:02","09-abr-2026":"08:33","10-abr-2026":"SIN SOLICITUD","11-abr-2026":"06:51","13-abr-2026":"08:37","14-abr-2026":"08:35","15-abr-2026":"08:34","16-abr-2026":"","17-abr-2026":"08:47","18-abr-2026":"08:31","20-abr-2026":"07:18"},{"regional":"PASTO","24-mar-2026":"10:27","25-mar-2026":"07:51","26-mar-2026":"08:00","27-mar-2026":"SIN SOLICITUD","28-mar-2026":"SIN SOLICITUD","30-mar-2026":"09:13","04-abr-2026":"SIN SOLICITUD","06-abr-2026":"07:16","07-abr-2026":"07:52","08-abr-2026":"07:52","09-abr-2026":"SIN SOLICITUD","10-abr-2026":"07:56","11-abr-2026":"07:59","13-abr-2026":"08:00","14-abr-2026":"07:39","15-abr-2026":"09:24","16-abr-2026":"","17-abr-2026":"08:16","18-abr-2026":"08:00","20-abr-2026":"09:28"},{"regional":"PEREIRA","24-mar-2026":"08:48","25-mar-2026":"08:57","26-mar-2026":"09:08","27-mar-2026":"08:23","28-mar-2026":"08:45","30-mar-2026":"08:32","04-abr-2026":"09:19","06-abr-2026":"08:35","07-abr-2026":"08:25","08-abr-2026":"08:44","09-abr-2026":"08:35","10-abr-2026":"09:03","11-abr-2026":"08:00","13-abr-2026":"08:26","14-abr-2026":"09:02","15-abr-2026":"08:59","16-abr-2026":"09:16","17-abr-2026":"08:38","18-abr-2026":"07:37","20-abr-2026":"08:38"},{"regional":"POPAYAN","24-mar-2026":"08:08","25-mar-2026":"08:52","26-mar-2026":"08:39","27-mar-2026":"08:00","28-mar-2026":"09:17","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"09:01","06-abr-2026":"10:03","07-abr-2026":"09:00","08-abr-2026":"08:47","09-abr-2026":"08:52","10-abr-2026":"08:50","11-abr-2026":"08:45","13-abr-2026":"08:54","14-abr-2026":"08:23","15-abr-2026":"08:42","16-abr-2026":"09:45","17-abr-2026":"08:35","18-abr-2026":"09:01","20-abr-2026":"08:00"},{"regional":"RIOACHA","24-mar-2026":"11:53","25-mar-2026":"08:06","26-mar-2026":"08:49","27-mar-2026":"SIN SOLICITUD","28-mar-2026":"08:00","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"08:27","06-abr-2026":"10:23","07-abr-2026":"08:05","08-abr-2026":"10:17","09-abr-2026":"09:52","10-abr-2026":"09:16","11-abr-2026":"08:42","13-abr-2026":"09:47","14-abr-2026":"09:41","15-abr-2026":"10:10","16-abr-2026":"","17-abr-2026":"08:33","18-abr-2026":"07:50","20-abr-2026":"SIN SOLICITUD"},{"regional":"SANTA MARTA","24-mar-2026":"12:11","25-mar-2026":"06:00","26-mar-2026":"08:03","27-mar-2026":"11:21","28-mar-2026":"11:15","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"08:45","06-abr-2026":"SIN SOLICITUD","07-abr-2026":"07:52","08-abr-2026":"SIN SOLICITUD","09-abr-2026":"07:14","10-abr-2026":"07:53","11-abr-2026":"09:17","13-abr-2026":"07:54","14-abr-2026":"07:37","15-abr-2026":"07:03","16-abr-2026":"","17-abr-2026":"SIN SOLICITUD","18-abr-2026":"08:14","20-abr-2026":"08:01"},{"regional":"SINCELEJO","24-mar-2026":"SIN SOLICITUD","25-mar-2026":"08:33","26-mar-2026":"09:34","27-mar-2026":"08:00","28-mar-2026":"09:07","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"SIN SOLICITUD","06-abr-2026":"08:49","07-abr-2026":"08:48","08-abr-2026":"SIN SOLICITUD","09-abr-2026":"SIN SOLICITUD","10-abr-2026":"09:15","11-abr-2026":"SIN SOLICITUD","13-abr-2026":"SIN SOLICITUD","14-abr-2026":"08:24","15-abr-2026":"09:03","16-abr-2026":"","17-abr-2026":"SIN SOLICITUD","18-abr-2026":"08:34","20-abr-2026":"SIN SOLICITUD"},{"regional":"VALLEDUPAR","24-mar-2026":"SIN SOLICITUD","25-mar-2026":"08:13","26-mar-2026":"08:29","27-mar-2026":"09:22","28-mar-2026":"09:26","30-mar-2026":"SIN SOLICITUD","04-abr-2026":"08:57","06-abr-2026":"SIN SOLICITUD","07-abr-2026":"07:35","08-abr-2026":"SIN SOLICITUD","09-abr-2026":"07:41","10-abr-2026":"SIN SOLICITUD","11-abr-2026":"SIN SOLICITUD","13-abr-2026":"08:06","14-abr-2026":"08:24","15-abr-2026":"07:39","16-abr-2026":"","17-abr-2026":"SIN SOLICITUD","18-abr-2026":"09:08","20-abr-2026":"14:10"},{"regional":"VILLAVICENCIO","24-mar-2026":"09:09","25-mar-2026":"08:42","26-mar-2026":"08:00","27-mar-2026":"07:30","28-mar-2026":"08:39","30-mar-2026":"08:35","04-abr-2026":"SIN SOLICITUD","06-abr-2026":"08:04","07-abr-2026":"SIN SOLICITUD","08-abr-2026":"08:56","09-abr-2026":"SIN SOLICITUD","10-abr-2026":"08:20","11-abr-2026":"07:19","13-abr-2026":"08:00","14-abr-2026":"08:01","15-abr-2026":"08:27","16-abr-2026":"08:41","17-abr-2026":"07:28","18-abr-2026":"08:00","20-abr-2026":"10:00"}]};
-let TK_DATA = {estados:[], indicadores:[]};
 
 // Normaliza cualquier formato de hora que venga de Google Sheets
 // Puede ser: "8:20", "08:20", "Sat Dec 30 1899 08:20:00 GMT-0456...", Date object
@@ -1577,8 +1432,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   buildCityChips(['21/04/2026'], 'ALL');
   applyFilters();
   renderProg();
-  setTimeout(()=>{ fetchViaJSONP('https://script.google.com/macros/s/AKfycbyf-8XT5EH-uD9ABF3Jx1lgjQcAxtpXxOPgRiJXtuFXh8r8C7FG9ykz89NQS47pW98Amg/exec'); }, 300);
+  setTimeout(()=>{ fetchViaJSONP('https://script.google.com/macros/s/AKfycbzG5AyaviUShU0waDzoYCwtV7qSq-TVBz65XDGigrRIv_kJw8BI3UtktMiiCsGXEVG9Mw/exec'); }, 300);
 });
+
 </script>
 </body>
 </html>
